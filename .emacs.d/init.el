@@ -17,6 +17,12 @@
 (setq default-input-method "korean-hangul")
 (global-set-key (kbd "<S-SPC>") 'toggle-input-method)
 
+;; System font
+(when (and window-system (eq system-type 'darwin))
+  ;(set-face-attribute 'default nil :family "menlo" :height 130))
+  (set-face-attribute 'default nil :family "D2Coding" :height 130))
+  ;(set-fontset-font t 'hangul (font-spec :name "D2Coding")))
+
 ;; Key 입력시 Echo 창에 표시되는 딜레이타임
 (setq echo-keystrokes 0.001)
 
@@ -39,22 +45,20 @@
 
 ;; Default Mode
 (define-key global-map (kbd "C-j") nil)
+;; unset C- and M- digit keys
+(dotimes (n 10)
+  (global-unset-key (kbd (format "C-%d" n)))
+  (global-unset-key (kbd (format "M-%d" n)))
+  )
 
 ;; Display time
 (display-time)
 
-;; System font
-(when (and window-system (eq system-type 'darwin))
-  ;(set-face-attribute 'default nil :family "menlo" :height 130))
-  (set-face-attribute 'default nil :family "D2Coding" :height 130))
-  ;(set-fontset-font t 'hangul (font-spec :name "D2Coding")))
-
 ;; Package repository Setup
 (require 'package)
 (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/") t)
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (package-initialize)
 
 ;; use-package 를 설치하여 package를 관리한다.
@@ -66,6 +70,7 @@
 (use-package use-package-ensure-system-package
   :ensure t)
 
+;; Key Chord mode 를 사용할 수 있다. (key 조합)
 (use-package use-package-chords
   :ensure t
   :config (key-chord-mode 1))
@@ -91,6 +96,19 @@
   (add-hook 'org-mode-hook 'whitespace-cleanup-mode))
 
 
+;;;; Dispaly / Workspace
+(use-package eyebrowse
+  :diminish eyebrowse-mode
+  :config
+  (progn
+	(define-key eyebrowse-mode-map (kbd "M-1") 'eyebrowse-switch-to-window-config-1)
+	(define-key eyebrowse-mode-map (kbd "M-2") 'eyebrowse-switch-to-window-config-2)
+	(define-key eyebrowse-mode-map (kbd "M-3") 'eyebrowse-switch-to-window-config-3)
+	(define-key eyebrowse-mode-map (kbd "M-4") 'eyebrowse-switch-to-window-config-4)
+	(define-key eyebrowse-mode-map (kbd "M-0") 'eyebrowse-close-window-config)
+	(eyebrowse-mode t)
+	(setq eyebrowse-new-workspace t)))
+
 ;;;; Orgmode
 ;; Orgmode 를 최신버전으로 업데이트 한다.
 (use-package org
@@ -102,7 +120,6 @@
    ("\C-cb" . org-switchb))
   )
 
-
 ;; org문서를 gfm(markdown)으로 export한다.
 (use-package ox-gfm
   :ensure t)
@@ -111,8 +128,6 @@
 (use-package org-bullets
   :ensure t
   :init
-;  (setq org-bullets-bullet-list
-;	'("◉" "◎" "<img draggable="false" class="emoji" alt="⚫" src="https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/svg/26ab.svg" scale="0">" "○" "►" "◇"))
   (setq org-todo-keywords
 	'((sequence "TODO(t)" "IN PROGRESS(p)" "|" "DONE(d)")
 	  (sequence "⚑ WAITING(w)" "|")
@@ -194,11 +209,11 @@
 
 ;; indent guide 선을 동적으로 그려준다.
 (use-package indent-guide
-	:ensure t
-	:diminish indent-guide-mode
-	:init
-	(setq indent-guide-char "|")
-	(indent-guide-global-mode))
+  :ensure t
+  :diminish indent-guide-mode
+  :init
+  (setq indent-guide-char "|")
+  (indent-guide-global-mode))
 
 (use-package multi-term
   :ensure t
@@ -209,13 +224,13 @@
 
 ;;;; swiper and ivy
 (use-package swiper
-	:ensure t
-	:diminish ivy-mode
-	:init
-	(ivy-mode 1)
-	(setq ivy-use-virtual-buffers nil)
-	(setq ivy-height 12)
-	(setq ivy-switch-buffer-faces-alist
+  :ensure t
+  :diminish ivy-mode
+  :init
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers nil)
+  (setq ivy-height 12)
+  (setq ivy-switch-buffer-faces-alist
 	'((emacs-lisp-mode . outline-1)
 	  (org-mode . outline-2))))
 
@@ -281,7 +296,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-	(org-bullets whitespace-cleanup-mode org-plus-contrib ox-gfm markdown-preview-mode exec-path-from-shell snazzy-theme elpy counsel-projectile company counsel swiper diminish multiple-cursors smartparens use-package-chords use-package-ensure-system-package use-package)))
+	(eyebrowse org-bullets whitespace-cleanup-mode org-plus-contrib ox-gfm markdown-preview-mode exec-path-from-shell snazzy-theme elpy counsel-projectile company counsel swiper diminish multiple-cursors smartparens use-package-chords use-package-ensure-system-package use-package)))
  '(show-paren-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
