@@ -117,8 +117,45 @@
   (("\C-cl" . org-store-link)
    ("\C-ca" . org-agenda)
    ("\C-cc" . org-capture)
-   ("\C-cb" . org-switchb))
+   ("\C-cb" . org-switchb)
+   ("\C-cw" . org-refile)
   )
+  :init
+  ;; Orgmode 의 Agenda 파일을 설정한다.
+  (setq org-agenda-files (list "~/iCloudDocuments/Base/inbox.org"
+			       "~/iCloudDocuments/Base/gtd.org"
+			       "~/iCloudDocuments/Base/office.org"
+			       "~/iCloudDocuments/Base/tickler.org"
+			       "~/iCloudDocuments/Books/ReadingList.org"))
+  ;; Capture 시 옵션을 설정한다.
+  (setq org-capture-templates
+	'(("t" "Todo [inbox]" entry
+	   (file+headline "~/iCloudDocuments/Base/inbox.org" "Tasks")
+	   "* TODO %i%?")
+
+	  ("T" "Ticker" entry
+	   (file+headline "~/iCloudDocuments/Base/tickler.org" "Tickler")
+	   "* %i% \n %U")))
+  ;; Refile 시 옮겨갈 위치의 리스트를 설정한다.
+  (setq org-refile-targets '(("~/iCloudDocuments/Base/gtd.org" :maxlevel . 3)
+			     ("~/iCloudDocuments/Base/office.org" :maxlevel . 2)
+			     ("~/iCloudDocuments/Bases/omeday.org" :level . 1)
+			     ("~/iCloudDocuments/Base/tickler.org" :maxlevel . 2)))
+  ;; Agenda 의 Custom Command/View를 설정한다.
+  (setq org-agenda-custom-commands
+		'(("H" "Home And Office List"
+		   ((agenda)
+			(tags-todo "HOME")
+			(tags-todo "OFFICE")))
+		  ("D" "Daily Action List"
+		   ((agenda "" ((org-agenda-ndays 1)
+						(org-agenda-span 1)
+						(org-agenda-sorting-starteqy
+						 (quote ((agenda time-up priority-down tag-up))))
+						(org-deadline-warning-days 0))))
+		  ))
+  )
+)
 
 ;; org문서를 gfm(markdown)으로 export한다.
 (use-package ox-gfm
@@ -129,9 +166,8 @@
   :ensure t
   :init
   (setq org-todo-keywords
-	'((sequence "TODO(t)" "IN PROGRESS(p)" "|" "DONE(d)")
-	  (sequence "⚑ WAITING(w)" "|")
-	  (sequence "|" "✘ CANCELED(c)")))
+	'((sequence "TODO(t)" "IN PROGRESS(p)" "⚑ WAITING(w)" "|" "DONE(d)" "✘ CANCELED(c)")
+	  (sequence "|" )))
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
@@ -234,6 +270,15 @@
 	'((emacs-lisp-mode . outline-1)
 	  (org-mode . outline-2))))
 
+;;projectile
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode)
+  :config
+  (setq projectile-completion-system 'ivy)
+  )
+
 (use-package counsel
   :ensure t)
 
@@ -246,7 +291,22 @@
 	(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 	(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
-;; Coding
+;;;; Coding
+(use-package magit
+  :diminish auto-revert-mode
+  :ensure t
+  :init
+  ;; magit 오토 리버트시 버퍼의 브랜치명까지 갱신하도록
+  (setq auto-revert-check-vc-info t)
+  (with-eval-after-load 'info
+	(info-initialize)
+	(add-to-list 'Info-directory-list
+		 "~/.emacs.d/site-lisp/magit/Documentation/"))
+  ;; Emacs의 기본 git 백앤드는 끈다.
+  (setq vc-handled-backends nil)
+  :bind
+  ("C-c m" . magit-status))
+
 (use-package markdown-mode
   :ensure t
   :commands(markdown-mode gfm-mode)
@@ -274,6 +334,20 @@
   (define-key company-active-map (kbd "C-n") #'company-select-next)
   (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
+  ;; =======================
+  ;; Adding company backends
+  ;; =======================
+  ;; Python auto completion
+(use-package company-jedi
+  :ensure t
+  :config
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (add-hook 'python-mode-hook 'jedi:ac-setup))
+
+(defun my/python-mode-hook()
+  (add-to-list 'company-backends 'company-jedi))
+(add-hook 'python-mode-hook 'my/python-mode-hook)
+
 ;; python
 (use-package elpy
   :ensure t
@@ -282,12 +356,14 @@
   (setq elpy-rpc-python-command "python3")
   (setq python-shell-interpreter "python3"))
   ;(elpy-use-cpython "/usr/local/bin/python3"))
-  ;(setq elpy-rpc-background "jedi")
+  (setq elpy-rpc-backend "jedi")
   ;(elpy-use-cpython (or "/usr/loacl/bin/python3"))
   ;(setq python-shell-interpreter-args "--simple-prompt -i")
   ;(add-hook 'python-mode-hook (lambda ()
 ;				(setq indent-tabs-mode nil))))
 
+; pipenv 를 사용하기 위한 코드
+(setenv "LANG" "ko_KR.UTF-8")
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -296,7 +372,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-	(eyebrowse org-bullets whitespace-cleanup-mode org-plus-contrib ox-gfm markdown-preview-mode exec-path-from-shell snazzy-theme elpy counsel-projectile company counsel swiper diminish multiple-cursors smartparens use-package-chords use-package-ensure-system-package use-package)))
+    (company-jedi projectile magit eyebrowse org-bullets whitespace-cleanup-mode org-plus-contrib ox-gfm markdown-preview-mode exec-path-from-shell snazzy-theme elpy counsel-projectile company counsel swiper diminish multiple-cursors smartparens use-package-chords use-package-ensure-system-package use-package)))
  '(show-paren-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
