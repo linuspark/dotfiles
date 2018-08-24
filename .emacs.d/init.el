@@ -7,7 +7,7 @@
 (setq inhibit-startup-message t)
 (setq initial-scratch-message "")
 
-;; Mac 에서 Keymap 변경
+;; Mac Keymap Change
 (setq mac-command-key-is-meta t)
 (setq mac-command-modifier 'meta)
 
@@ -19,14 +19,17 @@
 
 ;; System font
 (when (and window-system (eq system-type 'darwin))
-  ;(set-face-attribute 'default nil :family "menlo" :height 130))
   (set-face-attribute 'default nil :family "D2Coding" :height 130))
-  ;(set-fontset-font t 'hangul (font-spec :name "D2Coding")))
+(when (and window-system (eq system-type 'windows-nt))
+  (set-face-attribute 'default nil :family "D2Coding ligature" :height 100))
 
-;; Key 입력시 Echo 창에 표시되는 딜레이타임
+;; Key Stroke Delay time
 (setq echo-keystrokes 0.001)
 
 (setq tab-width 4)
+
+; When File is changed, auto reload
+(global-auto-revert-mode t)
 
 ;; Turn Off backups
 (setq backup-inhibited t)
@@ -51,8 +54,10 @@
   (global-unset-key (kbd (format "M-%d" n)))
   )
 
-;; Display time
+;; Default Setting
 (display-time)
+(visual-line-mode)
+(linum-mode)
 
 ;; Package repository Setup
 (require 'package)
@@ -149,10 +154,10 @@
 			(tags-todo "OFFICE")))
 		  ("D" "Daily Action List"
 		   ((agenda "" ((org-agenda-ndays 1)
-						(org-agenda-span 1)
-						(org-agenda-sorting-starteqy
-						 (quote ((agenda time-up priority-down tag-up))))
-						(org-deadline-warning-days 0))))
+				(org-agenda-span 1)
+				(org-agenda-sorting-starteqy
+				 (quote ((agenda time-up priority-down tag-up))))
+				(org-deadline-warning-days 0))))
 		  ))
   )
 )
@@ -273,11 +278,15 @@
 ;;projectile
 (use-package projectile
   :ensure t
+  :delight '(:eval (concat " [" (projectile-project-name) "]"))
   :init
   (projectile-mode)
   :config
   (setq projectile-completion-system 'ivy)
-  )
+  (setq projectile-enable-caching t)
+  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (projectile-mode +1))
 
 (use-package counsel
   :ensure t)
