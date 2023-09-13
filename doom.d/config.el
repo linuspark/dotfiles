@@ -40,7 +40,7 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Documents/org/")
+(setq org-directory "~/Documents/diary-org/gtd/")
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -74,3 +74,33 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+;;
+;; ====Custom Settings===
+;; GUI 로 Frame이 보이는 경우라면 고정된 값으로 start-up 한다.
+(when (display-graphic-p)
+  (setq frame-resize-pixelwise t)
+  (set-frame-position (selected-frame) 100 50)
+  (set-frame-size (selected-frame) 1230 1350 t))
+
+;; 메뉴바 모드를 실행한다. <F10> 으로 메뉴 바를 열 수 있다.
+(menu-bar-mode 1)
+
+;; Just for Fun
+(nyan-mode)
+
+;; Font
+(setq doom-font (font-spec :family "D2Coding" :size 16))
+
+;; ===== Language environments =====
+;; 한글 입력기. emacs 에서는 emacs 내부의 한글입력기를 사용해야 불편하지 않다.
+;; emacs 의 한글 입력기는 <S-SPC> 이다.
+(setq default-input-method "korean-hangul")
+(set-language-environment "Korean")
+(setq locale-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+;; 편집모드에서 빠져나갈때 한글이 켜져있으면 이후에 노멀 모드에서 커맨드가 안먹히는 짜증이 발생한다.
+;; 그냥 편집모드에서 빠져나갈때 무조건 리셋시킨다. 엄청 편리함
+(add-hook 'evil-insert-state-exit-hook (lambda ()
+                                         (setq evil-input-method nil)))
+
+;; ===== key binding =====
